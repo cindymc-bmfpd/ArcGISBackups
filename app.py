@@ -84,6 +84,17 @@ def get_user_folders(gis) -> list[dict]:
     return user_folders
 
 
+def get_backuppable_items_in_folder(gis, folder_id: str) -> list:
+    """Return list of Item objects in folder that are Feature Service or Web Map."""
+    me = gis.users.me
+    folder_items = me.items(folder=folder_id)
+    return [
+        i
+        for i in folder_items
+        if getattr(i, "type", "") in ("Feature Service", "Web Map", "Web Mapping Application")
+    ][:100]
+
+
 def get_gis():
     """Build a GIS connection from session (url, username, password). Returns None if not logged in."""
     if not session.get("logged_in"):

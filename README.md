@@ -39,6 +39,22 @@ python app.py
 
 Then open **http://127.0.0.1:5000** in your browser.
 
+## CLI backup (no UI)
+
+You can run a command-line backup that prompts for credentials and lets you pick a folder and item(s) to back up:
+
+```bash
+python backup_cli.py
+```
+
+1. Enter ArcGIS URL (or leave blank for default), username, and password.
+2. Choose a folder from the numbered list.
+3. Choose one or more layers/maps by number (e.g. `1` or `1,3,5`).
+4. Enter an optional backup subpath (or leave blank for the base backup directory).
+5. The export runs and prints the output path when done.
+
+The same `BACKUP_BASE_PATH` environment variable applies; the subpath you enter is under that base.
+
 ## Usage
 
 1. **Log in** – Enter your ArcGIS Online URL (default `https://www.arcgis.com`), username, and password. For ArcGIS Enterprise, use your portal URL (e.g. `https://yourorg.com/portal`).
