@@ -271,7 +271,11 @@ def search():
     session["message"] = f"Found {len(results)} item(s)."
     session["message_type"] = "success"
     session["search_results"] = [
-        {"id": item.id, "title": item.title, "type": getattr(item, "type", "")}
+        {
+            "id": str(getattr(item, "id", "") or ""),
+            "title": getattr(item, "title", "") or "",
+            "type": getattr(item, "type", "") or "",
+        }
         for item in results
     ]
     session["last_content_folder"] = folder_id

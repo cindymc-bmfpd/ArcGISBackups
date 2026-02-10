@@ -9,6 +9,13 @@ This is a work in progress and is not yet functional.  Here's a list of TODO:
 
 **Requirements:** Python 3.10–3.12 (see [ArcGIS API for Python system requirements](https://developers.arcgis.com/python/guide/system-requirements/)).
 
+## Create the Environment
+
+From your project directory
+
+    python3 -m venv venv
+    source venv/bin/activate
+
 ## Install
 
 ```bash
@@ -57,6 +64,19 @@ The path you enter in the UI is a **subpath** under this base (e.g. `2025-02`). 
 - Use this app only in a **trusted environment** (e.g. on your own machine).
 - Credentials are kept in the session for the duration of your login and are not stored on disk. The app is intended for local use at `http://127.0.0.1:5000`.
 - For production or shared use, set `FLASK_SECRET_KEY` and consider HTTPS and secure cookie options.
+
+## Tests
+
+Tests verify that Search results correctly populate the Item IDs list (backend rendering and Add-selected behavior).
+
+```bash
+pip install -r requirements-dev.txt
+pytest tests/test_search_item_ids.py -v
+```
+
+- **Backend:** After login and search, the index page renders checkboxes with `data-id` and the "Add selected to backup list" button; backup form receives and parses `item_ids` correctly.
+- **Add-selected logic:** Merge/dedupe of selected IDs with existing textarea value is tested (same behavior as the front-end script).
+- **E2E (optional):** With Playwright installed (`playwright install chromium`), one test runs the real JavaScript in a headless browser to confirm the textarea is populated when "Add selected" is clicked.
 
 ## Optional: ArcGIS Enterprise
 
