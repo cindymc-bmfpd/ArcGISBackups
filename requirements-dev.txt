@@ -1,6 +1,0 @@
-# Test dependencies for ArcGIS Backups app
-# Install: pip install -r requirements-dev.txt
-pytest>=7.0.0
-# Optional for E2E (Add-selected in real browser):
-# pip install playwright && playwright install chromium
-playwright>=1.40.0

@@ -1,6 +1,10 @@
 """
-CLI backup app: prompt for credentials, choose folder and item(s), then export.
-Run from project directory: python backup_cli.py
+ArcGIS Online Backup – main application.
+
+Prompts for credentials, lets you choose a folder and item(s), then exports
+via OfflineContentManager. Run from the project directory:
+
+    python backup_cli.py
 """
 import getpass
 import os
