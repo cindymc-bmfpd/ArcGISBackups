@@ -2,6 +2,11 @@
 
 A simple web app to log into your ArcGIS Online account and back up specified layers and maps. Uses the [ArcGIS API for Python](https://developers.arcgis.com/python/latest/guide/install-and-set-up/) and Esri’s **OfflineContentManager** to export items (and their dependencies) to a compressed package on disk.
 
+This is a work in progress and is not yet functional.  Here's a list of TODO:
+
+    [] Logging in with credentials via UI works, but takes several attempts with MFA
+    [] Listing contents of selected folders doesn't work
+
 **Requirements:** Python 3.10–3.12 (see [ArcGIS API for Python system requirements](https://developers.arcgis.com/python/guide/system-requirements/)).
 
 ## Install
