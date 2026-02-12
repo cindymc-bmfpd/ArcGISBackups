@@ -119,7 +119,8 @@ def main() -> None:
         )
         for i in selected
     ]
-    default_subpath = default_backup_subpath(folder_title, item_info)
+    folder_title_for_path = folder_title.replace(" ", "")
+    default_subpath = default_backup_subpath(folder_title_for_path, item_info)
 
     # Backup path (prepend "backups" to path)
     full_default = "backups/" + default_subpath
