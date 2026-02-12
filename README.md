@@ -27,10 +27,10 @@ From the project directory:
 python backup_cli.py
 ```
 
-1. Enter ArcGIS URL (or leave blank for default), username, and password.
+1. For credentials: create a file `.arcgis_credentials` (see below) or enter username and password when prompted.
 2. Choose a folder from the numbered list.
 3. Choose one or more layers/maps by number (e.g. `1` or `1,3,5`).
-4. Enter an optional backup subpath (or leave blank for the base backup directory).
+4. Enter an optional backup subpath, or leave blank to use `YYYYMONDD/Folder/type/name` (e.g. `backups/2026FEB11/My Maps/WebMap/BMFX_FuelBreaks_FieldWork`).
 5. The export runs and prints the output path when done.
 
 ## Backup base path
@@ -44,9 +44,30 @@ python backup_cli.py
 
 The subpath you enter in step 4 is under this base (e.g. `2025-02`). Path traversal is blocked; you cannot escape the base directory.
 
+## Optional: Credentials file
+
+To avoid typing your username and password each run, create a file `.arcgis_credentials` in the project directory:
+
+```
+USERNAME=your_username
+PASSWORD=your_password
+```
+
+**This file is listed in .gitignore and must never be committed.** To use a different path:
+
+```bash
+export AGO_CREDENTIALS_FILE=/path/to/your/credentials
+python backup_cli.py
+```
+
 ## Optional: ArcGIS Enterprise
 
-Use ArcGIS Enterprise by entering your portal URL when prompted (e.g. `https://gis.yourorg.com/portal`) and your portal username and password.
+By default the app connects to ArcGIS Online. For ArcGIS Enterprise:
+
+```bash
+export AGO_URL=https://gis.yourorg.com/portal
+python backup_cli.py
+```
 
 ## Project layout
 

@@ -11,28 +11,34 @@ import os
 import sys
 
 from app import (
-    BACKUP_BASE_PATH,
     DEFAULT_AGO_URL,
+    default_backup_subpath,
     get_backuppable_items_in_folder,
     get_user_folders,
+    load_credentials_from_file,
     safe_backup_path,
 )
 
 
 def main() -> None:
-    # Credentials
-    url = (os.environ.get("AGO_URL") or "").strip()
-    if not url:
-        url = input("ArcGIS URL (blank for default): ").strip() or DEFAULT_AGO_URL
-    username = input("Username: ").strip()
-    if not username:
-        print("Username is required.")
-        sys.exit(1)
-    password = getpass.getpass("Password: ")
-    if not password:
-        print("Password is required.")
-        sys.exit(1)
+    url = (os.environ.get("AGO_URL") or "").strip() or DEFAULT_AGO_URL
 
+    # Credentials: try credentials file first, then prompt
+    credentials_path = (os.environ.get("AGO_CREDENTIALS_FILE") or "").strip()
+    creds = load_credentials_from_file(credentials_path if credentials_path else None)
+    if creds:
+        username, password = creds
+    else:
+        username = input("Username: ").strip()
+        if not username:
+            print("Username is required.")
+            sys.exit(1)
+        password = getpass.getpass("Password: ")
+        if not password:
+            print("Password is required.")
+            sys.exit(1)
+
+    print("Awaiting MFA prompt... (it may take a few seconds to appear)")
     # Login
     try:
         from arcgis.gis import GIS
@@ -106,9 +112,21 @@ def main() -> None:
         sys.exit(1)
 
     selected = [items[i] for i in sorted(set(indices))]
+    item_info = [
+        (
+            getattr(i, "title", "") or getattr(i, "id", "") or "unnamed",
+            getattr(i, "type", "") or "Item",
+        )
+        for i in selected
+    ]
+    default_subpath = default_backup_subpath(folder_title, item_info)
 
-    # Backup path
-    user_path = input("\nBackup subpath (blank for base): ").strip()
+    # Backup path (prepend "backups" to path)
+    full_default = "backups/" + default_subpath
+    user_path = input(f"\nBackup subpath (blank for {full_default!r}): ").strip()
+    if not user_path:
+        user_path = default_subpath
+    user_path = "backups/" + user_path.lstrip("/")
     path_obj = safe_backup_path(user_path)
     if path_obj is None:
         print("Invalid backup path: must be under the allowed base directory.")

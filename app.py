@@ -5,13 +5,75 @@ Used by backup_cli.py (main application).
 """
 import os
 import re
+from datetime import datetime
 from pathlib import Path
 
 # Base directory for backups; user path is resolved relative to this.
-BACKUP_BASE_PATH = os.path.abspath(os.environ.get("BACKUP_BASE_PATH", "./backups"))
+BACKUP_BASE_PATH = os.path.abspath(os.environ.get("BACKUP_BASE_PATH", "."))
 
 # Default ArcGIS Online URL
 DEFAULT_AGO_URL = "https://www.arcgis.com"
+
+# Default path for credentials file (relative to project root)
+DEFAULT_CREDENTIALS_FILE = Path(__file__).resolve().parent / ".arcgis_credentials"
+
+# Keys expected in credentials file (name=value format)
+USERNAME = "USERNAME"
+PASSWORD = "PASSWORD"
+
+
+def load_credentials_from_file(filepath: Path | str | None = None) -> tuple[str, str] | None:
+    """
+    Read username and password from a credentials file.
+    File format: USERNAME=foo and PASSWORD=bar (one per line).
+    Returns (username, password) if successful, None if file missing or malformed.
+    """
+    path = Path(filepath) if filepath else DEFAULT_CREDENTIALS_FILE
+    if not path.exists():
+        return None
+    try:
+        text = path.read_text(encoding="utf-8")
+        pairs: dict[str, str] = {}
+        for line in text.splitlines():
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            match = re.match(r"([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$", line)
+            if match:
+                key, value = match.group(1), match.group(2).strip()
+                pairs[key] = value
+        if USERNAME not in pairs or PASSWORD not in pairs:
+            return None
+        return pairs[USERNAME], pairs[PASSWORD]
+    except (OSError, IOError):
+        return None
+
+
+def default_backup_subpath(
+    folder_title: str,
+    items: list[tuple[str, str]],
+    now: datetime | None = None,
+) -> str:
+    """
+    Build default backup subpath: YYYYMONDD/Folder/type/name.
+    Each item is (name, type) e.g. ("My Map", "Web Map") -> "WebMap/My Map".
+    Type has spaces removed (Web Map -> WebMap). Sanitizes for filesystem use.
+    """
+    def _sanitize(s: str) -> str:
+        return re.sub(r'[/\\:*?"<>|]', "_", s or "").strip() or "unnamed"
+
+    def _type_key(t: str) -> str:
+        return re.sub(r"\s+", "", (t or "").strip()) or "Item"
+
+    dt = now or datetime.now()
+    current_date = f"{dt:%Y}{dt:%b}".upper() + f"{dt:%d}"
+    parts = [
+        f"{_type_key(item_type)}/{_sanitize(name)}"
+        for name, item_type in items
+    ]
+    item_part = "_".join(parts) if parts else "unnamed"
+    return f"{current_date}/{_sanitize(folder_title)}/{item_part}"
+
 
 # Item types for "layers and maps" search
 SEARCH_ITEM_TYPES = [
@@ -90,16 +152,15 @@ def resolve_items_by_ids(gis, item_ids: list[str]) -> tuple[list, list]:
 def safe_backup_path(user_path: str) -> Path | None:
     """
     Resolve user-provided path to an absolute path under BACKUP_BASE_PATH.
-    Returns None if path would escape the base (path traversal).
+    Returns None if the resolved path escapes the base directory (prevents path traversal).
     """
     base = Path(BACKUP_BASE_PATH).resolve()
     base.mkdir(parents=True, exist_ok=True)
+
     if not user_path or not user_path.strip():
         return base
-    # Join with base and resolve to detect traversal
-    combined = (base / user_path.strip()).resolve()
-    try:
-        combined.relative_to(base)
-    except ValueError:
-        return None
-    return combined
+
+    candidate = (base / user_path.strip()).resolve()
+    if base in candidate.parents or candidate == base:
+        return candidate
+    return None

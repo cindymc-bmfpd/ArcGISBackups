@@ -28,3 +28,6 @@ instance/
 ### Backups and local data
 backups/
 
+### Credentials (never commit)
+.arcgis_credentials
+
